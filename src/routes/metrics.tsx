@@ -1,19 +1,29 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { Download } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { EmptyState } from "@/components/EmptyState";
+import { Slider } from "@/components/ui/slider";
 import { usePredictions } from "@/lib/predictions-store";
-import { computeConfusionMatrix, computeMetrics, computeRoc } from "@/lib/metrics";
-import { cn } from "@/lib/utils";
+import {
+  computeConfusionMatrix,
+  computeMetrics,
+  computePrCurve,
+  computeRoc,
+  metricsAtThreshold,
+  metricsSummaryToCsv,
+} from "@/lib/metrics";
 
 export const Route = createFileRoute("/metrics")({
   head: () => ({ meta: [{ title: "Metrics — Model Evaluation Dashboard" }] }),
@@ -24,11 +34,6 @@ const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(3) : "—");
 
 function MetricsPage() {
   const data = usePredictions();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!data) navigate({ to: "/" });
-  }, [data, navigate]);
 
   const cm = useMemo(() => (data ? computeConfusionMatrix(data.rows) : null), [data]);
   const summary = useMemo(() => (cm ? computeMetrics(cm) : null), [cm]);
@@ -36,24 +41,84 @@ function MetricsPage() {
     () => (data && cm ? computeRoc(data.rows, cm.labels) : null),
     [data, cm],
   );
+  const pr = useMemo(
+    () => (data && roc ? computePrCurve(data.rows, roc.positiveLabel) : null),
+    [data, roc],
+  );
 
-  if (!data || !cm || !summary) return null;
+  const handleExport = () => {
+    if (!summary) return;
+    const csv = metricsSummaryToCsv(summary);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `metrics-summary-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <DashboardLayout>
       <div className="max-w-5xl px-8 py-12 space-y-12">
-        <header>
-          <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Accuracy {fmt(summary.accuracy)} · {summary.weighted.support.toLocaleString()} samples
-          </p>
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {summary
+                ? `Accuracy ${fmt(summary.accuracy)} · ${summary.weighted.support.toLocaleString()} samples`
+                : "No file uploaded"}
+            </p>
+          </div>
+          {summary && (
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </button>
+          )}
         </header>
 
-        <ConfusionMatrixView cm={cm} />
-        <MetricsTable summary={summary} />
-        {roc && <RocChart roc={roc} />}
+        {!data || !cm || !summary ? (
+          <>
+            <SectionShell title="Confusion matrix" />
+            <SectionShell title="Metrics summary" />
+            <SectionShell title="ROC curve" />
+          </>
+        ) : (
+          <>
+            <ConfusionMatrixView cm={cm} />
+            <MetricsTable summary={summary} />
+            {roc ? (
+              <RocChart roc={roc} />
+            ) : (
+              <section>
+                <h2 className="text-sm font-medium text-foreground mb-4">ROC curve</h2>
+                <EmptyState message="ROC curve requires binary classification with a y_prob column." />
+              </section>
+            )}
+            {roc && pr && data && (
+              <ThresholdAnalyzer
+                rows={data.rows}
+                positiveLabel={roc.positiveLabel}
+                pr={pr}
+              />
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
+  );
+}
+
+function SectionShell({ title }: { title: string }) {
+  return (
+    <section>
+      <h2 className="text-sm font-medium text-foreground mb-4">{title}</h2>
+      <EmptyState />
+    </section>
   );
 }
 
@@ -149,7 +214,7 @@ function MetricsTable({ summary }: { summary: ReturnType<typeof computeMetrics> 
           </tbody>
         </table>
       </div>
-      <p className={cn("mt-3 text-xs text-muted-foreground")}>
+      <p className="mt-3 text-xs text-muted-foreground">
         Accuracy: <span className="font-mono">{fmt(summary.accuracy)}</span>
       </p>
     </section>
@@ -228,5 +293,141 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
         </ResponsiveContainer>
       </div>
     </section>
+  );
+}
+
+function ThresholdAnalyzer({
+  rows,
+  positiveLabel,
+  pr,
+}: {
+  rows: ReturnType<typeof usePredictions> extends infer T
+    ? T extends { rows: infer R }
+      ? R
+      : never
+    : never;
+  positiveLabel: string;
+  pr: NonNullable<ReturnType<typeof computePrCurve>>;
+}) {
+  const [threshold, setThreshold] = useState(0.5);
+  const m = useMemo(
+    () => metricsAtThreshold(rows, positiveLabel, threshold),
+    [rows, positiveLabel, threshold],
+  );
+
+  if (!m) return null;
+
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-4">
+        <h2 className="text-sm font-medium text-foreground">Threshold analyzer</h2>
+        <span className="text-xs text-muted-foreground font-mono">
+          positive: {positiveLabel}
+        </span>
+      </div>
+
+      <div className="border border-border rounded-md p-5 space-y-5">
+        <div className="flex items-center gap-6">
+          <div className="flex-1">
+            <div className="flex items-baseline justify-between mb-2">
+              <label className="text-xs text-muted-foreground">Classification threshold</label>
+              <span className="text-sm font-mono tabular-nums text-foreground">
+                {threshold.toFixed(2)}
+              </span>
+            </div>
+            <Slider
+              value={[threshold]}
+              min={0.01}
+              max={0.99}
+              step={0.01}
+              onValueChange={(v) => setThreshold(v[0])}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-px bg-border border border-border rounded-md overflow-hidden">
+          <LiveStat label="Precision" value={fmt(m.precision)} />
+          <LiveStat label="Recall" value={fmt(m.recall)} />
+          <LiveStat label="F1" value={fmt(m.f1)} />
+        </div>
+
+        <div>
+          <div className="text-xs text-muted-foreground mb-2">Precision–Recall curve</div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={pr} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
+                <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} />
+                <XAxis
+                  type="number"
+                  dataKey="recall"
+                  domain={[0, 1]}
+                  stroke="var(--muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  label={{
+                    value: "Recall",
+                    position: "insideBottom",
+                    offset: -8,
+                    fontSize: 11,
+                    fill: "var(--muted-foreground)",
+                  }}
+                />
+                <YAxis
+                  type="number"
+                  domain={[0, 1]}
+                  stroke="var(--muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  label={{
+                    value: "Precision",
+                    angle: -90,
+                    position: "insideLeft",
+                    fontSize: 11,
+                    fill: "var(--muted-foreground)",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--background)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 6,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number) => v.toFixed(3)}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="precision"
+                  stroke="var(--primary)"
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                <ReferenceDot
+                  x={m.recall}
+                  y={m.precision}
+                  r={5}
+                  fill="var(--primary)"
+                  stroke="var(--background)"
+                  strokeWidth={2}
+                  isFront
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LiveStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-background px-4 py-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 text-xl font-semibold tracking-tight tabular-nums font-mono">
+        {value}
+      </div>
+    </div>
   );
 }
