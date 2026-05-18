@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Upload, LayoutDashboard, BarChart3 } from "lucide-react";
+import { Upload, LayoutDashboard, BarChart3, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setPredictions, usePredictions } from "@/lib/predictions-store";
 import type { ReactNode } from "react";
 
 const nav = [
@@ -11,6 +12,7 @@ const nav = [
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const data = usePredictions();
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -39,7 +41,22 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
       </aside>
-      <main className="flex-1 min-w-0">{children}</main>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="h-14 shrink-0 border-b border-border flex items-center justify-between px-6">
+          <span className="text-sm font-semibold tracking-tight">EvalKit</span>
+          {data && (
+            <Link
+              to="/"
+              onClick={() => setPredictions(null)}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Upload new file
+            </Link>
+          )}
+        </header>
+        <main className="flex-1 min-w-0">{children}</main>
+      </div>
     </div>
   );
 }
