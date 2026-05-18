@@ -1,26 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { UploadZone } from "@/components/UploadZone";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Upload — Model Evaluation Dashboard" },
+      { name: "description", content: "Upload prediction CSVs to evaluate model performance." },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
 function Index() {
-  return <PlaceholderIndex />;
+  return (
+    <DashboardLayout>
+      <div className="max-w-3xl mx-auto px-8 py-12">
+        <header className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight">Upload</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Drop a predictions file to begin evaluating your model.
+          </p>
+        </header>
+        <UploadZone />
+      </div>
+    </DashboardLayout>
+  );
 }
