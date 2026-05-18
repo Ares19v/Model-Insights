@@ -15,7 +15,7 @@ import { Download } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { Slider } from "@/components/ui/slider";
-import { usePredictions } from "@/lib/predictions-store";
+import { usePredictions, type PredictionRow } from "@/lib/predictions-store";
 import {
   computeConfusionMatrix,
   computeMetrics,
@@ -301,11 +301,7 @@ function ThresholdAnalyzer({
   positiveLabel,
   pr,
 }: {
-  rows: ReturnType<typeof usePredictions> extends infer T
-    ? T extends { rows: infer R }
-      ? R
-      : never
-    : never;
+  rows: PredictionRow[];
   positiveLabel: string;
   pr: NonNullable<ReturnType<typeof computePrCurve>>;
 }) {
