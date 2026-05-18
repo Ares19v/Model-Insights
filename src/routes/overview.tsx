@@ -56,10 +56,10 @@ function OverviewPage() {
                 layout="vertical"
                 margin={{ top: 4, right: 16, bottom: 4, left: 8 }}
               >
-                <CartesianGrid horizontal={false} stroke="hsl(var(--border))" strokeOpacity={0.4} />
+                <CartesianGrid horizontal={false} stroke="var(--border)" strokeOpacity={0.4} />
                 <XAxis
                   type="number"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
@@ -67,22 +67,22 @@ function OverviewPage() {
                 <YAxis
                   type="category"
                   dataKey="cls"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   width={80}
                 />
                 <Tooltip
-                  cursor={{ fill: "hsl(var(--accent))", fillOpacity: 0.3 }}
+                  cursor={{ fill: "var(--accent)", fillOpacity: 0.3 }}
                   contentStyle={{
-                    background: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--background)",
+                    border: "1px solid var(--border)",
                     borderRadius: 6,
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 2, 2, 0]} />
+                <Bar dataKey="count" fill="var(--primary)" radius={[0, 2, 2, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
