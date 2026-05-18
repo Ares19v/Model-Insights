@@ -131,3 +131,90 @@ export function computeRoc(rows: PredictionRow[], labels: string[]): RocResult |
 
   return { points, auc, positiveLabel };
 }
+
+export type PrPoint = { recall: number; precision: number; threshold: number };
+
+export function computePrCurve(
+  rows: PredictionRow[],
+  positiveLabel: string,
+): PrPoint[] | null {
+  const scored = rows
+    .filter((r) => typeof r.y_prob === "number")
+    .map((r) => ({ score: r.y_prob as number, y: r.y_true === positiveLabel ? 1 : 0 }));
+  if (scored.length === 0) return null;
+  const P = scored.reduce((s, r) => s + r.y, 0);
+  if (P === 0) return null;
+  scored.sort((a, b) => b.score - a.score);
+  const points: PrPoint[] = [];
+  let tp = 0;
+  let fp = 0;
+  let prevScore = Number.POSITIVE_INFINITY;
+  for (const s of scored) {
+    if (s.score !== prevScore) {
+      const precision = tp + fp === 0 ? 1 : tp / (tp + fp);
+      const recall = tp / P;
+      points.push({ recall, precision, threshold: prevScore });
+      prevScore = s.score;
+    }
+    if (s.y === 1) tp++;
+    else fp++;
+  }
+  const precision = tp / (tp + fp);
+  const recall = tp / P;
+  points.push({ recall, precision, threshold: prevScore });
+  return points;
+}
+
+export type ThresholdMetrics = {
+  precision: number;
+  recall: number;
+  f1: number;
+  tp: number;
+  fp: number;
+  fn: number;
+  tn: number;
+};
+
+export function metricsAtThreshold(
+  rows: PredictionRow[],
+  positiveLabel: string,
+  threshold: number,
+): ThresholdMetrics | null {
+  const scored = rows.filter((r) => typeof r.y_prob === "number");
+  if (scored.length === 0) return null;
+  let tp = 0;
+  let fp = 0;
+  let fn = 0;
+  let tn = 0;
+  for (const r of scored) {
+    const actualPos = r.y_true === positiveLabel;
+    const predPos = (r.y_prob as number) >= threshold;
+    if (predPos && actualPos) tp++;
+    else if (predPos && !actualPos) fp++;
+    else if (!predPos && actualPos) fn++;
+    else tn++;
+  }
+  const precision = tp + fp === 0 ? 0 : tp / (tp + fp);
+  const recall = tp + fn === 0 ? 0 : tp / (tp + fn);
+  const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall);
+  return { precision, recall, f1, tp, fp, fn, tn };
+}
+
+export function metricsSummaryToCsv(summary: MetricsSummary): string {
+  const header = ["class", "precision", "recall", "f1", "support"];
+  const lines = [header.join(",")];
+  for (const c of summary.perClass) {
+    lines.push([c.cls, c.precision, c.recall, c.f1, c.support].join(","));
+  }
+  lines.push(
+    [
+      "weighted_avg",
+      summary.weighted.precision,
+      summary.weighted.recall,
+      summary.weighted.f1,
+      summary.weighted.support,
+    ].join(","),
+  );
+  lines.push(["accuracy", "", "", summary.accuracy, summary.weighted.support].join(","));
+  return lines.join("\n");
+}
