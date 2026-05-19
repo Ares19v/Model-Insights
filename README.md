@@ -113,3 +113,8 @@ Built as a practical companion to my [PCB defect detection project](https://gith
 ## Built By
 
 [Ares19v](https://github.com/Ares19v)
+
+---
+<p align="center">
+  Made by Devansh Tyagi @ 2026
+</p>
