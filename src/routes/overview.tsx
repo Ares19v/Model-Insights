@@ -39,6 +39,11 @@ function OverviewPage() {
           <EmptyState message="Upload a predictions CSV to see sample counts, class distribution, and a data preview." />
         ) : (
           <>
+            {stats.total < 5 && (
+              <div className="mb-6 rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                Small dataset detected — metrics may not be reliable.
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-px bg-border border border-border rounded-md overflow-hidden mb-10">
               <Stat label="Total samples" value={stats.total.toLocaleString()} />
               <Stat label="Unique classes" value={stats.classes.toString()} />
