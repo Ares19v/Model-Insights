@@ -64,6 +64,31 @@ function MetricsPage() {
     URL.revokeObjectURL(url);
   };
 
+  if (!data || !cm || !summary) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-5xl px-8 py-12">
+          <header className="mb-12">
+            <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">No file uploaded</p>
+          </header>
+          <div className="flex flex-col items-center justify-center text-center border border-dashed border-border rounded-lg py-24 px-6">
+            <p className="text-sm text-foreground">No data loaded.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload a CSV to get started.
+            </p>
+            <Link
+              to="/"
+              className="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              Go to Upload
+            </Link>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="max-w-5xl px-8 py-12 space-y-12">
@@ -71,48 +96,34 @@ function MetricsPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              {summary
-                ? `Accuracy ${fmt(summary.accuracy)} · ${summary.weighted.support.toLocaleString()} samples`
-                : "No file uploaded"}
+              {`Accuracy ${fmt(summary.accuracy)} · ${summary.weighted.support.toLocaleString()} samples`}
             </p>
           </div>
-          {summary && (
-            <button
-              onClick={handleExport}
-              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export CSV
-            </button>
-          )}
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </button>
         </header>
 
-        {!data || !cm || !summary ? (
-          <>
-            <SectionShell title="Confusion matrix" />
-            <SectionShell title="Metrics summary" />
-            <SectionShell title="ROC curve" />
-          </>
+        <ConfusionMatrixView cm={cm} />
+        <MetricsTable summary={summary} />
+        {roc ? (
+          <RocChart roc={roc} />
         ) : (
-          <>
-            <ConfusionMatrixView cm={cm} />
-            <MetricsTable summary={summary} />
-            {roc ? (
-              <RocChart roc={roc} />
-            ) : (
-              <section>
-                <h2 className="text-sm font-medium text-foreground mb-4">ROC curve</h2>
-                <EmptyState message="ROC curve requires binary classification with a y_prob column." />
-              </section>
-            )}
-            {roc && pr && data && (
-              <ThresholdAnalyzer
-                rows={data.rows}
-                positiveLabel={roc.positiveLabel}
-                pr={pr}
-              />
-            )}
-          </>
+          <section>
+            <h2 className="text-sm font-medium text-foreground mb-4">ROC curve</h2>
+            <EmptyState message="ROC curve requires binary classification with a y_prob column." />
+          </section>
+        )}
+        {roc && pr && (
+          <ThresholdAnalyzer
+            rows={data.rows}
+            positiveLabel={roc.positiveLabel}
+            pr={pr}
+          />
         )}
       </div>
     </DashboardLayout>
