@@ -11,10 +11,16 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Download } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { usePredictions, type PredictionRow } from "@/lib/predictions-store";
 import {
   computeConfusionMatrix,
@@ -128,7 +134,7 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
     <section>
       <h2 className="text-sm font-medium text-foreground mb-4">Confusion matrix</h2>
       <div className="flex items-start gap-4">
-        <div className="flex items-center pt-10">
+        <div className="flex items-center pt-16">
           <span className="text-xs text-muted-foreground -rotate-90 whitespace-nowrap origin-center">
             Actual
           </span>
@@ -138,20 +144,20 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
           <div className="inline-block">
             <div
               className="grid gap-px bg-border p-px rounded-md"
-              style={{ gridTemplateColumns: `auto repeat(${labels.length}, minmax(64px, 1fr))` }}
+              style={{ gridTemplateColumns: `auto repeat(${labels.length}, minmax(96px, 1fr))` }}
             >
               <div className="bg-background" />
               {labels.map((l) => (
                 <div
                   key={`h-${l}`}
-                  className="bg-background px-3 py-2 text-xs font-mono text-muted-foreground text-center"
+                  className="bg-background px-4 py-3 text-sm font-mono text-muted-foreground text-center"
                 >
                   {l}
                 </div>
               ))}
               {labels.map((rowLabel, i) => (
                 <div key={`row-${rowLabel}`} className="contents">
-                  <div className="bg-background px-3 py-2 text-xs font-mono text-muted-foreground text-right">
+                  <div className="bg-background px-4 py-5 text-sm font-mono text-muted-foreground text-right">
                     {rowLabel}
                   </div>
                   {labels.map((_, j) => {
@@ -160,7 +166,7 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
                     return (
                       <div
                         key={`c-${i}-${j}`}
-                        className="px-3 py-3 text-sm font-mono text-center tabular-nums text-foreground"
+                        className="px-4 py-5 text-base font-mono text-center tabular-nums text-foreground min-h-[64px] flex items-center justify-center"
                         style={{
                           backgroundColor: `color-mix(in oklab, var(--primary) ${(intensity * 100).toFixed(1)}%, var(--background))`,
                         }}
@@ -172,10 +178,42 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
                 </div>
               ))}
             </div>
+            <div className="mt-4 flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">Lower</span>
+              <div
+                className="h-2 w-40 rounded-sm border border-border"
+                style={{
+                  background:
+                    "linear-gradient(to right, color-mix(in oklab, var(--primary) 0%, var(--background)), var(--primary))",
+                }}
+              />
+              <span className="text-xs text-muted-foreground">Higher count</span>
+              <span className="text-xs text-muted-foreground ml-2">
+                Darker = more samples
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function PositiveClassLabel({ label }: { label: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <UITooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-mono cursor-help">
+            Positive class: <span className="text-foreground">{label}</span>
+            <Info className="h-3 w-3 opacity-70" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="max-w-[240px] text-xs font-sans bg-popover text-popover-foreground border border-border">
+          The class treated as positive when computing ROC and Precision–Recall curves from y_prob.
+        </TooltipContent>
+      </UITooltip>
+    </TooltipProvider>
   );
 }
 
@@ -226,9 +264,13 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
     <section>
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-sm font-medium text-foreground">ROC curve</h2>
-        <span className="text-xs text-muted-foreground font-mono">
-          AUC = {roc.auc.toFixed(3)} · positive: {roc.positiveLabel}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground font-mono">
+            AUC = {roc.auc.toFixed(3)}
+          </span>
+          <span className="text-xs text-muted-foreground">·</span>
+          <PositiveClassLabel label={String(roc.positiveLabel)} />
+        </div>
       </div>
       <div className="h-[360px] w-full border border-border rounded-md p-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -317,9 +359,7 @@ function ThresholdAnalyzer({
     <section>
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-sm font-medium text-foreground">Threshold analyzer</h2>
-        <span className="text-xs text-muted-foreground font-mono">
-          positive: {positiveLabel}
-        </span>
+        <PositiveClassLabel label={String(positiveLabel)} />
       </div>
 
       <div className="border border-border rounded-md p-5 space-y-5">

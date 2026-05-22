@@ -56,6 +56,9 @@ function OverviewPage() {
                     <CartesianGrid horizontal={false} stroke="var(--border)" strokeOpacity={0.4} />
                     <XAxis
                       type="number"
+                      dataKey="count"
+                      domain={[0, "dataMax"]}
+                      allowDecimals={false}
                       stroke="var(--muted-foreground)"
                       fontSize={11}
                       tickLine={false}
@@ -114,6 +117,9 @@ function OverviewPage() {
                   </tbody>
                 </table>
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Showing {Math.min(10, stats.total)} of {stats.total.toLocaleString()} rows
+              </p>
             </section>
           </>
         )}
