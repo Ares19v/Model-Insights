@@ -359,9 +359,7 @@ function ThresholdAnalyzer({
     <section>
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-sm font-medium text-foreground">Threshold analyzer</h2>
-        <span className="text-xs text-muted-foreground font-mono">
-          positive: {positiveLabel}
-        </span>
+        <PositiveClassLabel label={String(positiveLabel)} />
       </div>
 
       <div className="border border-border rounded-md p-5 space-y-5">
