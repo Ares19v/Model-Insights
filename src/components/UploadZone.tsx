@@ -24,9 +24,12 @@ export function UploadZone() {
         skipEmptyLines: true,
         complete: (result) => {
           const columns = result.meta.fields ?? [];
-          if (!columns.includes("y_true") || !columns.includes("y_pred")) {
+          const required = ["y_true", "y_pred"];
+          const missing = required.filter((c) => !columns.includes(c));
+          if (missing.length > 0) {
+            const found = columns.length ? columns.join(", ") : "none";
             setError(
-              `Missing required columns. Found: [${columns.join(", ") || "none"}]. Expected y_true and y_pred.`,
+              `Missing required column${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}. Found columns: [${found}].`,
             );
             return;
           }
