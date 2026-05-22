@@ -264,9 +264,13 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
     <section>
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-sm font-medium text-foreground">ROC curve</h2>
-        <span className="text-xs text-muted-foreground font-mono">
-          AUC = {roc.auc.toFixed(3)} · positive: {roc.positiveLabel}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground font-mono">
+            AUC = {roc.auc.toFixed(3)}
+          </span>
+          <span className="text-xs text-muted-foreground">·</span>
+          <PositiveClassLabel label={String(roc.positiveLabel)} />
+        </div>
       </div>
       <div className="h-[360px] w-full border border-border rounded-md p-4">
         <ResponsiveContainer width="100%" height="100%">
