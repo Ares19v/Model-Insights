@@ -11,10 +11,16 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Download } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { usePredictions, type PredictionRow } from "@/lib/predictions-store";
 import {
   computeConfusionMatrix,
