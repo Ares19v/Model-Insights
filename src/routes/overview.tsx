@@ -117,6 +117,9 @@ function OverviewPage() {
                   </tbody>
                 </table>
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Showing {Math.min(10, stats.total)} of {stats.total.toLocaleString()} rows
+              </p>
             </section>
           </>
         )}
