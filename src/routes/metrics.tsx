@@ -110,20 +110,26 @@ function MetricsPage() {
 
         <ConfusionMatrixView cm={cm} />
         <MetricsTable summary={summary} />
-        {roc ? (
-          <RocChart roc={roc} />
+        {cm.labels.length > 2 ? (
+          <p className="text-sm text-muted-foreground">
+            ROC and threshold analysis are available for binary classification only.
+          </p>
+        ) : roc ? (
+          <>
+            <RocChart roc={roc} />
+            {pr && (
+              <ThresholdAnalyzer
+                rows={data.rows}
+                positiveLabel={roc.positiveLabel}
+                pr={pr}
+              />
+            )}
+          </>
         ) : (
           <section>
             <h2 className="text-sm font-medium text-foreground mb-4">ROC curve</h2>
             <EmptyState message="ROC curve requires binary classification with a y_prob column." />
           </section>
-        )}
-        {roc && pr && (
-          <ThresholdAnalyzer
-            rows={data.rows}
-            positiveLabel={roc.positiveLabel}
-            pr={pr}
-          />
         )}
       </div>
     </DashboardLayout>
