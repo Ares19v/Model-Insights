@@ -130,14 +130,6 @@ function MetricsPage() {
   );
 }
 
-function SectionShell({ title }: { title: string }) {
-  return (
-    <section>
-      <h2 className="text-sm font-medium text-foreground mb-4">{title}</h2>
-      <EmptyState />
-    </section>
-  );
-}
 
 function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMatrix> }) {
   const { labels, matrix, max } = cm;
