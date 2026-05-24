@@ -332,7 +332,7 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              formatter={(v: number) => v.toFixed(3)}
+              formatter={(v: number) => Number(v.toFixed(2)).toString()}
             />
             <ReferenceLine
               segment={[
@@ -449,7 +449,7 @@ function ThresholdAnalyzer({
                     borderRadius: 6,
                     fontSize: 12,
                   }}
-                  formatter={(v: number) => v.toFixed(3)}
+                  formatter={(v: number) => Number(v.toFixed(2)).toString()}
                 />
                 <Line
                   type="monotone"
