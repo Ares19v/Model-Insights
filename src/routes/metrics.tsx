@@ -139,9 +139,20 @@ function MetricsPage() {
 
 function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMatrix> }) {
   const { labels, matrix, max } = cm;
+  const total = matrix.reduce((s, row) => s + row.reduce((a, b) => a + b, 0), 0);
+  const correct = matrix.reduce((s, row, i) => s + (row[i] ?? 0), 0);
+  const pct = total === 0 ? 0 : (correct / total) * 100;
   return (
     <section>
-      <h2 className="text-sm font-medium text-foreground mb-4">Confusion matrix</h2>
+      <h2 className="text-sm font-medium text-foreground mb-2">Confusion matrix</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Your model correctly classified{" "}
+        <span className="text-foreground font-mono tabular-nums">{correct.toLocaleString()}</span>{" "}
+        of{" "}
+        <span className="text-foreground font-mono tabular-nums">{total.toLocaleString()}</span>{" "}
+        samples (
+        <span className="text-foreground font-mono tabular-nums">{pct.toFixed(2)}%</span>).
+      </p>
       <div className="flex items-start gap-4">
         <div className="flex items-center pt-16">
           <span className="text-xs text-muted-foreground -rotate-90 whitespace-nowrap origin-center">
@@ -321,7 +332,7 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              formatter={(v: number) => v.toFixed(3)}
+              formatter={(v: number) => Number(v.toFixed(2)).toString()}
             />
             <ReferenceLine
               segment={[
@@ -438,7 +449,7 @@ function ThresholdAnalyzer({
                     borderRadius: 6,
                     fontSize: 12,
                   }}
-                  formatter={(v: number) => v.toFixed(3)}
+                  formatter={(v: number) => Number(v.toFixed(2)).toString()}
                 />
                 <Line
                   type="monotone"

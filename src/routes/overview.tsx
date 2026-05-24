@@ -86,6 +86,7 @@ function OverviewPage() {
                         borderRadius: 6,
                         fontSize: 12,
                       }}
+                      formatter={(v: number) => Number(v.toFixed(2)).toString()}
                     />
                     <Bar dataKey="count" fill="var(--primary)" radius={[0, 2, 2, 0]} />
                   </BarChart>

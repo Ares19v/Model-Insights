@@ -56,6 +56,16 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           )}
         </header>
         <main className="flex-1 min-w-0">{children}</main>
+        <footer className="shrink-0 border-t border-border px-6 py-3">
+          <a
+            href="https://github.com/Ares19v"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            github.com/Ares19v
+          </a>
+        </footer>
       </div>
     </div>
   );
