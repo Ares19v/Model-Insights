@@ -444,12 +444,37 @@ function ThresholdAnalyzer({
   pr: NonNullable<ReturnType<typeof computePrCurve>>;
 }) {
   const [threshold, setThreshold] = useState(0.5);
+  const [optimizeFor, setOptimizeFor] = useState<"f1" | "precision" | "recall">("f1");
   const m = useMemo(
     () => metricsAtThreshold(rows, positiveLabel, threshold),
     [rows, positiveLabel, threshold],
   );
 
+  const optimal = useMemo(() => {
+    if (!pr.length) return null;
+    let best = pr[0];
+    let bestScore = -Infinity;
+    for (const p of pr) {
+      const score =
+        optimizeFor === "precision"
+          ? p.precision
+          : optimizeFor === "recall"
+            ? p.recall
+            : p.precision + p.recall === 0
+              ? 0
+              : (2 * p.precision * p.recall) / (p.precision + p.recall);
+      if (score > bestScore && Number.isFinite(p.threshold)) {
+        bestScore = score;
+        best = p;
+      }
+    }
+    return best;
+  }, [pr, optimizeFor]);
+
   if (!m) return null;
+
+  const posPreds = m.tp + m.fp;
+  const negPreds = m.tn + m.fn;
 
   return (
     <section>
@@ -459,21 +484,56 @@ function ThresholdAnalyzer({
       </div>
 
       <div className="border border-border rounded-md p-5 space-y-5">
-        <div className="flex items-center gap-6">
-          <div className="flex-1">
-            <div className="flex items-baseline justify-between mb-2">
+        <div className="flex-1">
+          <div className="flex items-baseline justify-between mb-2 gap-3">
+            <div className="flex items-baseline gap-3">
               <label className="text-xs text-muted-foreground">Classification threshold</label>
-              <span className="text-sm font-mono tabular-nums text-foreground">
-                {threshold.toFixed(2)}
-              </span>
+              <button
+                onClick={() => setThreshold(0.5)}
+                className="text-[11px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+              >
+                Reset to 0.50
+              </button>
             </div>
-            <Slider
-              value={[threshold]}
-              min={0.01}
-              max={0.99}
-              step={0.01}
-              onValueChange={(v) => setThreshold(v[0])}
-            />
+            <span className="text-sm font-mono tabular-nums text-foreground">
+              {threshold.toFixed(2)}
+            </span>
+          </div>
+          <Slider
+            value={[threshold]}
+            min={0.01}
+            max={0.99}
+            step={0.01}
+            onValueChange={(v) => setThreshold(v[0])}
+          />
+        </div>
+
+        <div>
+          <div className="flex items-baseline justify-between mb-2 gap-3">
+            <label className="text-xs text-muted-foreground">Optimize for</label>
+            {optimal && (
+              <button
+                onClick={() => setThreshold(Math.min(0.99, Math.max(0.01, optimal.threshold)))}
+                className="text-[11px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors font-mono tabular-nums"
+              >
+                Jump to optimal: {Math.min(0.99, Math.max(0.01, optimal.threshold)).toFixed(2)}
+              </button>
+            )}
+          </div>
+          <div className="inline-flex border border-border rounded-md overflow-hidden">
+            {(["f1", "precision", "recall"] as const).map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setOptimizeFor(opt)}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors border-r border-border last:border-r-0 ${
+                  optimizeFor === opt
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                {opt === "f1" ? "F1" : opt.charAt(0).toUpperCase() + opt.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -482,6 +542,12 @@ function ThresholdAnalyzer({
           <LiveStat label="Recall" value={fmt(m.recall)} />
           <LiveStat label="F1" value={fmt(m.f1)} />
         </div>
+
+        <p className="text-xs text-muted-foreground font-mono tabular-nums">
+          At this threshold:{" "}
+          <span className="text-foreground">{posPreds.toLocaleString()}</span> positive predictions,{" "}
+          <span className="text-foreground">{negPreds.toLocaleString()}</span> negative predictions
+        </p>
 
         <div>
           <div className="text-xs text-muted-foreground mb-2">Precision–Recall curve</div>
@@ -535,6 +601,17 @@ function ThresholdAnalyzer({
                   dot={false}
                   isAnimationActive={false}
                 />
+                {optimal && (
+                  <ReferenceDot
+                    x={optimal.recall}
+                    y={optimal.precision}
+                    r={6}
+                    fill="var(--background)"
+                    stroke="var(--primary)"
+                    strokeWidth={2}
+                    isFront
+                  />
+                )}
                 <ReferenceDot
                   x={m.recall}
                   y={m.precision}
@@ -547,11 +624,18 @@ function ThresholdAnalyzer({
               </LineChart>
             </ResponsiveContainer>
           </div>
+          {optimal && (
+            <p className="mt-2 text-[11px] text-muted-foreground font-mono tabular-nums">
+              Hollow ring = optimal threshold for{" "}
+              {optimizeFor === "f1" ? "F1" : optimizeFor} · Solid dot = current threshold
+            </p>
+          )}
         </div>
       </div>
     </section>
   );
 }
+
 
 function LiveStat({ label, value }: { label: string; value: string }) {
   return (
