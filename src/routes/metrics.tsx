@@ -367,7 +367,18 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
       </div>
     </section>
   );
+function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="px-5 py-4 border-r border-b sm:border-b-0 border-border last:border-r-0">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums font-mono text-foreground">
+        {value}
+      </div>
+      {sub && <div className="mt-1 text-xs text-muted-foreground font-mono tabular-nums">{sub}</div>}
+    </div>
+  );
 }
+
 
 function ThresholdAnalyzer({
   rows,
