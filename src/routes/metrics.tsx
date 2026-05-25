@@ -153,6 +153,22 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
   const total = matrix.reduce((s, row) => s + row.reduce((a, b) => a + b, 0), 0);
   const correct = matrix.reduce((s, row, i) => s + (row[i] ?? 0), 0);
   const pct = total === 0 ? 0 : (correct / total) * 100;
+  const isBinary = labels.length === 2;
+  // Convention: labels[1] is the positive class
+  const tp = isBinary ? matrix[1][1] : 0;
+  const tn = isBinary ? matrix[0][0] : 0;
+  const fp = isBinary ? matrix[0][1] : 0;
+  const fn = isBinary ? matrix[1][0] : 0;
+  const cellTag = (i: number, j: number): string | null => {
+    if (!isBinary) return null;
+    if (i === 1 && j === 1) return "TP";
+    if (i === 0 && j === 0) return "TN";
+    if (i === 0 && j === 1) return "FP";
+    if (i === 1 && j === 0) return "FN";
+    return null;
+  };
+  const rowTotals = matrix.map((row) => row.reduce((a, b) => a + b, 0));
+  const colTotals = labels.map((_, j) => matrix.reduce((s, row) => s + row[j], 0));
   return (
     <section>
       <h2 className="text-sm font-medium text-foreground mb-2">Confusion matrix</h2>
@@ -175,7 +191,7 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
           <div className="inline-block">
             <div
               className="grid gap-px bg-border p-px rounded-md"
-              style={{ gridTemplateColumns: `auto repeat(${labels.length}, minmax(96px, 1fr))` }}
+              style={{ gridTemplateColumns: `auto repeat(${labels.length}, minmax(96px, 1fr)) auto` }}
             >
               <div className="bg-background" />
               {labels.map((l) => (
@@ -186,6 +202,9 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
                   {l}
                 </div>
               ))}
+              <div className="bg-background px-4 py-3 text-xs font-medium text-muted-foreground text-center">
+                Total
+              </div>
               {labels.map((rowLabel, i) => (
                 <div key={`row-${rowLabel}`} className="contents">
                   <div className="bg-background px-4 py-5 text-sm font-mono text-muted-foreground text-right">
@@ -194,21 +213,52 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
                   {labels.map((_, j) => {
                     const v = matrix[i][j];
                     const intensity = max === 0 ? 0 : v / max;
+                    const tag = cellTag(i, j);
                     return (
                       <div
                         key={`c-${i}-${j}`}
-                        className="px-4 py-5 text-base font-mono text-center tabular-nums text-foreground min-h-[64px] flex items-center justify-center"
+                        className="px-4 py-5 text-base font-mono text-center tabular-nums text-foreground min-h-[64px] flex flex-col items-center justify-center gap-1"
                         style={{
                           backgroundColor: `color-mix(in oklab, var(--primary) ${(intensity * 100).toFixed(1)}%, var(--background))`,
                         }}
                       >
-                        {v}
+                        <span>{v}</span>
+                        {tag && (
+                          <span className="text-[10px] font-medium tracking-wide text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-background/60">
+                            {tag}
+                          </span>
+                        )}
                       </div>
                     );
                   })}
+                  <div className="bg-background px-4 py-5 text-sm font-mono tabular-nums text-muted-foreground text-center">
+                    {rowTotals[i]}
+                  </div>
                 </div>
               ))}
+              <div className="bg-background px-4 py-3 text-xs font-medium text-muted-foreground text-right">
+                Total
+              </div>
+              {colTotals.map((t, j) => (
+                <div
+                  key={`ct-${j}`}
+                  className="bg-background px-4 py-3 text-sm font-mono tabular-nums text-muted-foreground text-center"
+                >
+                  {t}
+                </div>
+              ))}
+              <div className="bg-background px-4 py-3 text-sm font-mono tabular-nums text-foreground text-center">
+                {total}
+              </div>
             </div>
+            {isBinary && (
+              <div className="mt-3 text-xs font-mono text-muted-foreground tabular-nums">
+                True Positives: <span className="text-foreground">{tp}</span>
+                {"  |  "}True Negatives: <span className="text-foreground">{tn}</span>
+                {"  |  "}False Positives: <span className="text-foreground">{fp}</span>
+                {"  |  "}False Negatives: <span className="text-foreground">{fn}</span>
+              </div>
+            )}
             <div className="mt-4 flex items-center gap-3">
               <span className="text-xs text-muted-foreground">Lower</span>
               <div
@@ -218,6 +268,7 @@ function ConfusionMatrixView({ cm }: { cm: ReturnType<typeof computeConfusionMat
                     "linear-gradient(to right, color-mix(in oklab, var(--primary) 0%, var(--background)), var(--primary))",
                 }}
               />
+
               <span className="text-xs text-muted-foreground">Higher count</span>
               <span className="text-xs text-muted-foreground ml-2">
                 Darker = more samples
