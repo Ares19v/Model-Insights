@@ -89,23 +89,34 @@ function MetricsPage() {
     );
   }
 
+  const totalSamples = summary.weighted.support;
+  const correctCount = cm.matrix.reduce((s, row, i) => s + (row[i] ?? 0), 0);
+  const misclassified = totalSamples - correctCount;
+
   return (
     <DashboardLayout>
       <div className="max-w-5xl px-8 py-12 space-y-12">
-        <header className="flex items-start justify-between gap-4">
-          <div>
+        <header className="space-y-6">
+          <div className="flex items-start justify-between gap-4">
             <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {`Accuracy ${fmt(summary.accuracy)} · ${summary.weighted.support.toLocaleString()} samples`}
-            </p>
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </button>
           </div>
-          <button
-            onClick={handleExport}
-            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export CSV
-          </button>
+          <div className="grid grid-cols-2 sm:grid-cols-4 border border-border rounded-md overflow-hidden">
+            <StatTile label="Accuracy" value={fmt(summary.accuracy)} />
+            <StatTile label="Weighted F1" value={fmt(summary.weighted.f1)} />
+            <StatTile label="Total Samples" value={totalSamples.toLocaleString()} />
+            <StatTile
+              label="Misclassified"
+              value={misclassified.toLocaleString()}
+              sub={`${misclassified} of ${totalSamples}`}
+            />
+          </div>
         </header>
 
         <ConfusionMatrixView cm={cm} />
@@ -357,6 +368,20 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
     </section>
   );
 }
+
+function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+
+  return (
+    <div className="px-5 py-4 border-r border-b sm:border-b-0 border-border last:border-r-0">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums font-mono text-foreground">
+        {value}
+      </div>
+      {sub && <div className="mt-1 text-xs text-muted-foreground font-mono tabular-nums">{sub}</div>}
+    </div>
+  );
+}
+
 
 function ThresholdAnalyzer({
   rows,
