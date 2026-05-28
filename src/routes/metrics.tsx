@@ -345,6 +345,69 @@ function MetricsTable({ summary }: { summary: ReturnType<typeof computeMetrics> 
   );
 }
 
+function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetrics> }) {
+  const data = summary.perClass.map((c) => ({
+    cls: c.cls,
+    precision: Number(c.precision.toFixed(4)),
+    recall: Number(c.recall.toFixed(4)),
+    f1: Number(c.f1.toFixed(4)),
+  }));
+  const colors = {
+    precision: "color-mix(in oklab, var(--primary) 70%, var(--background))",
+    recall: "color-mix(in oklab, var(--primary) 45%, var(--background))",
+    f1: "color-mix(in oklab, var(--primary) 25%, var(--muted-foreground))",
+  };
+  return (
+    <section>
+      <h2 className="text-sm font-medium text-foreground mb-4">Per-class breakdown</h2>
+      <div className="border border-border rounded-md p-4">
+        <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
+          {(["precision", "recall", "f1"] as const).map((k) => (
+            <div key={k} className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-sm"
+                style={{ background: colors[k] }}
+              />
+              <span className="capitalize">{k === "f1" ? "F1" : k}</span>
+            </div>
+          ))}
+        </div>
+        <div className="h-[320px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+              <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} vertical={false} />
+              <XAxis
+                dataKey="cls"
+                stroke="var(--muted-foreground)"
+                fontSize={11}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, 1]}
+                stroke="var(--muted-foreground)"
+                fontSize={11}
+                tickLine={false}
+              />
+              <Tooltip
+                cursor={{ fill: "var(--muted)", fillOpacity: 0.3 }}
+                contentStyle={{
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+                formatter={(v: number) => v.toFixed(2)}
+              />
+              <Bar dataKey="precision" fill={colors.precision} radius={[2, 2, 0, 0]} />
+              <Bar dataKey="recall" fill={colors.recall} radius={[2, 2, 0, 0]} />
+              <Bar dataKey="f1" fill={colors.f1} radius={[2, 2, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </section>
+  );
+
 function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) {
   return (
     <section>
