@@ -62,17 +62,6 @@ function MetricsPage() {
     [data, roc],
   );
 
-  const handleExport = () => {
-    if (!summary) return;
-    const csv = metricsSummaryToCsv(summary);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `metrics-summary-${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const downloadBlob = (content: string, mime: string, ext: string) => {
     const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
