@@ -143,13 +143,26 @@ function MetricsPage() {
         <header className="space-y-6">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-            <button
-              onClick={handleExport}
-              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopySummary}
+                className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+              >
+                <Clipboard className="h-3.5 w-3.5" />
+                Copy summary
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">
+                  <Download className="h-3.5 w-3.5" />
+                  Export
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportCsv}>Export as CSV</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportJson}>Export as JSON</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 border border-border rounded-md overflow-hidden">
             <StatTile label="Accuracy" value={fmt(summary.accuracy)} />
