@@ -124,6 +124,7 @@ function MetricsPage() {
 
         <ConfusionMatrixView cm={cm} />
         <MetricsTable summary={summary} />
+        <PerClassBreakdown summary={summary} />
         {cm.labels.length > 2 ? (
           <p className="text-sm text-muted-foreground">
             ROC and threshold analysis are available for binary classification only.
