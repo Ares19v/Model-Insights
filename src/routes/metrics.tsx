@@ -74,6 +74,51 @@ function MetricsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadBlob = (content: string, mime: string, ext: string) => {
+    const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `metrics-summary-${Date.now()}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCsv = () => {
+    if (!summary) return;
+    downloadBlob(metricsSummaryToCsv(summary), "text/csv", "csv");
+  };
+
+  const handleExportJson = () => {
+    if (!summary) return;
+    downloadBlob(JSON.stringify(summary, null, 2), "application/json", "json");
+  };
+
+  const handleCopySummary = async () => {
+    if (!summary || !cm) return;
+    const total = summary.weighted.support;
+    const correct = cm.matrix.reduce((s, row, i) => s + (row[i] ?? 0), 0);
+    const miss = total - correct;
+    const lines = [
+      "Model Evaluation Summary",
+      "------------------------",
+      `Accuracy: ${fmt(summary.accuracy)}`,
+      `Weighted F1: ${fmt(summary.weighted.f1)}`,
+      `Samples: ${total} | Misclassified: ${miss}`,
+      "",
+      ...summary.perClass.map(
+        (c) =>
+          `Class ${c.cls} — Precision: ${fmt(c.precision)}  Recall: ${fmt(c.recall)}  F1: ${fmt(c.f1)}`,
+      ),
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast.success("Copied!", { duration: 2000 });
+    } catch {
+      toast.error("Failed to copy");
+    }
+  };
+
   if (!data || !cm || !summary) {
     return (
       <DashboardLayout>
