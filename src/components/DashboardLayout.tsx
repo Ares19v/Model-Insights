@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Upload, LayoutDashboard, BarChart3, RotateCcw } from "lucide-react";
+import { Upload, LayoutDashboard, BarChart3, RotateCcw, GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { setPredictions, usePredictions } from "@/lib/predictions-store";
 import type { ReactNode } from "react";
@@ -8,6 +8,7 @@ const nav = [
   { to: "/", label: "Upload", icon: Upload },
   { to: "/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/metrics", label: "Metrics", icon: BarChart3 },
+  { to: "/compare", label: "Compare", icon: GitCompare },
 ] as const;
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
