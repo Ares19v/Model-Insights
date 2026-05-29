@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OverviewRouteImport } from './routes/overview'
 import { Route as MetricsRouteImport } from './routes/metrics'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as IndexRouteImport } from './routes/index'
 
 const OverviewRoute = OverviewRouteImport.update({
@@ -23,6 +24,11 @@ const MetricsRoute = MetricsRouteImport.update({
   path: '/metrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/metrics': typeof MetricsRoute
   '/overview': typeof OverviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/metrics': typeof MetricsRoute
   '/overview': typeof OverviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/metrics': typeof MetricsRoute
   '/overview': typeof OverviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/metrics' | '/overview'
+  fullPaths: '/' | '/compare' | '/metrics' | '/overview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/metrics' | '/overview'
-  id: '__root__' | '/' | '/metrics' | '/overview'
+  to: '/' | '/compare' | '/metrics' | '/overview'
+  id: '__root__' | '/' | '/compare' | '/metrics' | '/overview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
   MetricsRoute: typeof MetricsRoute
   OverviewRoute: typeof OverviewRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MetricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
   MetricsRoute: MetricsRoute,
   OverviewRoute: OverviewRoute,
 }
