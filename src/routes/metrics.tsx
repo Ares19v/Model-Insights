@@ -193,6 +193,7 @@ function MetricsPage() {
                 pr={pr}
               />
             )}
+            <CalibrationCurve rows={data.rows} positiveLabel={roc.positiveLabel} />
           </>
         ) : (
           <section>
