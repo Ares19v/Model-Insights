@@ -772,3 +772,136 @@ function LiveStat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function CalibrationCurve({
+  rows,
+  positiveLabel,
+}: {
+  rows: PredictionRow[];
+  positiveLabel: string;
+}) {
+  const scored = rows.filter((r) => typeof r.y_prob === "number");
+  if (scored.length === 0) return null;
+
+  const bins = 10;
+  const buckets: { sumProb: number; pos: number; n: number }[] = Array.from(
+    { length: bins },
+    () => ({ sumProb: 0, pos: 0, n: 0 }),
+  );
+  let brierSum = 0;
+  for (const r of scored) {
+    const p = r.y_prob as number;
+    const y = r.y_true === positiveLabel ? 1 : 0;
+    brierSum += (p - y) ** 2;
+    let idx = Math.floor(p * bins);
+    if (idx >= bins) idx = bins - 1;
+    if (idx < 0) idx = 0;
+    buckets[idx].sumProb += p;
+    buckets[idx].pos += y;
+    buckets[idx].n += 1;
+  }
+  const brier = brierSum / scored.length;
+
+  const data = buckets
+    .filter((b) => b.n > 0)
+    .map((b) => ({
+      mean: b.sumProb / b.n,
+      fraction: b.pos / b.n,
+      diag: b.sumProb / b.n,
+    }));
+
+  const interpretation =
+    brier < 0.15 ? "Well calibrated" : brier < 0.25 ? "Moderately calibrated" : "Poorly calibrated";
+
+  return (
+    <section>
+      <h2 className="text-sm font-medium text-foreground mb-4">Calibration curve</h2>
+      <div className="border border-border rounded-md p-4">
+        <div className="h-[320px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 8, right: 16, bottom: 24, left: 8 }}
+            >
+              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+              <XAxis
+                type="number"
+                dataKey="mean"
+                domain={[0, 1]}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                label={{
+                  value: "Mean predicted probability",
+                  position: "insideBottom",
+                  offset: -12,
+                  fill: "var(--muted-foreground)",
+                  fontSize: 11,
+                }}
+              />
+              <YAxis
+                type="number"
+                domain={[0, 1]}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                label={{
+                  value: "Fraction of positives",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "var(--muted-foreground)",
+                  fontSize: 11,
+                }}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--popover)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+                formatter={(v: number) => v.toFixed(3)}
+              />
+              <Line
+                type="monotone"
+                dataKey="diag"
+                stroke="var(--muted-foreground)"
+                strokeDasharray="4 4"
+                dot={false}
+                name="Perfect calibration"
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="fraction"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                dot={{ r: 3, fill: "var(--primary)" }}
+                name="Model"
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <span>
+            Brier Score:{" "}
+            <span className="font-mono tabular-nums text-foreground">{fmt(brier)}</span>
+          </span>
+          <TooltipProvider delayDuration={150}>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 cursor-help opacity-70" />
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="max-w-[260px] text-xs font-sans bg-popover text-popover-foreground border border-border"
+              >
+                Brier score is the mean squared error between predicted probabilities and actual
+                outcomes (0 or 1). Lower is better — 0 is perfect.
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+          <span className="text-muted-foreground">— lower is better</span>
+          <span className="ml-auto text-xs text-foreground">{interpretation}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
