@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
+import { usePresentationMode, scaleChartHeight } from "@/lib/presentation-mode";
 import type { PredictionRow } from "@/lib/predictions-store";
 import {
   computeConfusionMatrix,
