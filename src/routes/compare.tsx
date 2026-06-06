@@ -42,6 +42,7 @@ type ModelEval = {
 const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(3) : "—");
 
 function ComparePage() {
+  const presentation = usePresentationMode();
   const [a, setA] = useState<Loaded | null>(null);
   const [b, setB] = useState<Loaded | null>(null);
 
