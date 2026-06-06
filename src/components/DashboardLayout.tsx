@@ -1,19 +1,45 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Upload, LayoutDashboard, BarChart3, RotateCcw, GitCompare } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { setPredictions, usePredictions } from "@/lib/predictions-store";
 import type { ReactNode } from "react";
 
 const nav = [
-  { to: "/", label: "Upload", icon: Upload },
-  { to: "/overview", label: "Overview", icon: LayoutDashboard },
-  { to: "/metrics", label: "Metrics", icon: BarChart3 },
-  { to: "/compare", label: "Compare", icon: GitCompare },
+  { to: "/", label: "Upload", icon: Upload, key: "U" },
+  { to: "/overview", label: "Overview", icon: LayoutDashboard, key: "O" },
+  { to: "/metrics", label: "Metrics", icon: BarChart3, key: "M" },
+  { to: "/compare", label: "Compare", icon: GitCompare, key: "C" },
 ] as const;
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const data = usePredictions();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      const match = nav.find((n) => n.key.toLowerCase() === key);
+      if (match) {
+        e.preventDefault();
+        navigate({ to: match.to });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -22,7 +48,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           <span className="text-sm font-semibold tracking-tight">Model Eval</span>
         </div>
         <nav className="flex-1 p-3 space-y-0.5">
-          {nav.map(({ to, label, icon: Icon }) => {
+          {nav.map(({ to, label, icon: Icon, key }) => {
             const active = pathname === to;
             return (
               <Link
@@ -36,7 +62,15 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {label}
+                <span className="flex-1">{label}</span>
+                <kbd
+                  className={cn(
+                    "ml-auto inline-flex items-center justify-center rounded border border-border/60 px-1.5 py-0.5 text-[10px] font-mono",
+                    active ? "text-muted-foreground" : "text-muted-foreground/70",
+                  )}
+                >
+                  {key}
+                </kbd>
               </Link>
             );
           })}
