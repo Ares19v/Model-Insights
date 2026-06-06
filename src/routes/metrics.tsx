@@ -410,6 +410,7 @@ function MetricsTable({ summary }: { summary: ReturnType<typeof computeMetrics> 
 }
 
 function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetrics> }) {
+  const presentation = usePresentationMode();
   const data = summary.perClass.map((c) => ({
     cls: c.cls,
     precision: Number(c.precision.toFixed(4)),
