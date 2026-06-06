@@ -198,9 +198,14 @@ function MetricsPage() {
         ) : (
           <section>
             <h2 className="text-sm font-medium text-foreground mb-4">ROC curve</h2>
-            <EmptyState message="ROC curve requires binary classification with a y_prob column." />
-          </section>
-        )}
+          <EmptyState message="ROC curve requires binary classification with a y_prob column." />
+        </section>
+      )}
+      <MisclassifiedSamples
+        rows={data.rows}
+        labels={cm.labels}
+        positiveLabel={roc?.positiveLabel}
+      />
       </div>
     </DashboardLayout>
   );
