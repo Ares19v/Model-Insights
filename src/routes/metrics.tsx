@@ -477,6 +477,7 @@ function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetr
 
 
 function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) {
+  const presentation = usePresentationMode();
   return (
     <section>
       <div className="flex items-baseline justify-between mb-4">
