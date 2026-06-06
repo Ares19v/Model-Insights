@@ -582,6 +582,7 @@ function ThresholdAnalyzer({
   positiveLabel: string;
   pr: NonNullable<ReturnType<typeof computePrCurve>>;
 }) {
+  const presentation = usePresentationMode();
   const [threshold, setThreshold] = useState(0.5);
   const [optimizeFor, setOptimizeFor] = useState<"f1" | "precision" | "recall">("f1");
   const m = useMemo(
