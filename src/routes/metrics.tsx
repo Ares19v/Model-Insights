@@ -795,6 +795,7 @@ function CalibrationCurve({
   rows: PredictionRow[];
   positiveLabel: string;
 }) {
+  const presentation = usePresentationMode();
   const scored = rows.filter((r) => typeof r.y_prob === "number");
   if (scored.length === 0) return null;
 
