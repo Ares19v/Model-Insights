@@ -833,7 +833,7 @@ function CalibrationCurve({
     <section>
       <h2 className="text-sm font-medium text-foreground mb-4">Calibration curve</h2>
       <div className="border border-border rounded-md p-4">
-        <div className="h-[320px] w-full">
+        <div style={{ height: scaleChartHeight(320, presentation) }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
