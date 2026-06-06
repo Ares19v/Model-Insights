@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePredictions, type PredictionRow } from "@/lib/predictions-store";
+import { usePresentationMode, scaleChartHeight } from "@/lib/presentation-mode";
 import {
   computeConfusionMatrix,
   computeMetrics,
