@@ -910,3 +910,198 @@ function CalibrationCurve({
     </section>
   );
 }
+
+type ErrorFilter = "all" | "fp" | "fn";
+
+function MisclassifiedSamples({
+  rows,
+  labels,
+  positiveLabel,
+}: {
+  rows: PredictionRow[];
+  labels: string[];
+  positiveLabel?: string;
+}) {
+  const [filter, setFilter] = useState<ErrorFilter>("all");
+  const isBinary = labels.length === 2;
+
+  const misclassified = useMemo(() => {
+    const list = rows
+      .map((row, idx) => ({ ...row, index: idx }))
+      .filter((row) => row.y_true !== row.y_pred);
+
+    const hasProb = list.some((r) => typeof r.y_prob === "number");
+    if (hasProb) {
+      list.sort((a, b) => {
+        const pa = typeof a.y_prob === "number" ? a.y_prob : -1;
+        const pb = typeof b.y_prob === "number" ? b.y_prob : -1;
+        return pb - pa;
+      });
+    }
+    return list;
+  }, [rows]);
+
+  const getErrorType = (row: PredictionRow): string => {
+    if (!isBinary || !positiveLabel) return "Misclassified";
+    return row.y_pred === positiveLabel ? "False Positive" : "False Negative";
+  };
+
+  const counts = useMemo(() => {
+    if (!isBinary || !positiveLabel) {
+      return { all: misclassified.length, fp: 0, fn: 0 };
+    }
+    return misclassified.reduce(
+      (acc, row) => {
+        acc.all++;
+        if (row.y_pred === positiveLabel) acc.fp++;
+        else acc.fn++;
+        return acc;
+      },
+      { all: 0, fp: 0, fn: 0 },
+    );
+  }, [misclassified, isBinary, positiveLabel]);
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return misclassified;
+    if (!isBinary || !positiveLabel) return misclassified;
+    if (filter === "fp")
+      return misclassified.filter((row) => row.y_pred === positiveLabel);
+    return misclassified.filter((row) => row.y_pred !== positiveLabel);
+  }, [misclassified, filter, isBinary, positiveLabel]);
+
+  const hasProb = rows.some((r) => typeof r.y_prob === "number");
+
+  return (
+    <section>
+      <h2 className="text-sm font-medium text-foreground mb-4">Misclassified samples</h2>
+      <div className="flex items-center gap-2 mb-3">
+        <FilterButton
+          label="All"
+          count={counts.all}
+          active={filter === "all"}
+          onClick={() => setFilter("all")}
+        />
+        {isBinary && (
+          <>
+            <FilterButton
+              label="False Positives"
+              count={counts.fp}
+              active={filter === "fp"}
+              onClick={() => setFilter("fp")}
+            />
+            <FilterButton
+              label="False Negatives"
+              count={counts.fn}
+              active={filter === "fn"}
+              onClick={() => setFilter("fn")}
+            />
+          </>
+        )}
+      </div>
+      <div className="border border-border rounded-md overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/30">
+              <th className="text-left font-medium text-muted-foreground px-4 py-2.5">Row</th>
+              <th className="text-left font-medium text-muted-foreground px-4 py-2.5">y_true</th>
+              <th className="text-left font-medium text-muted-foreground px-4 py-2.5">y_pred</th>
+              {hasProb && (
+                <th className="text-right font-medium text-muted-foreground px-4 py-2.5">
+                  y_prob
+                </th>
+              )}
+              <th className="text-left font-medium text-muted-foreground px-4 py-2.5">Error type</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono tabular-nums">
+            {filtered.map((row) => (
+              <tr key={row.index} className="border-b border-border last:border-0">
+                <td className="px-4 py-2.5 text-foreground">{row.index}</td>
+                <td className="px-4 py-2.5 text-foreground">{row.y_true}</td>
+                <td className="px-4 py-2.5 text-foreground">{row.y_pred}</td>
+                {hasProb && (
+                  <td className="px-4 py-2.5 text-right">
+                    {typeof row.y_prob === "number" ? row.y_prob.toFixed(4) : "—"}
+                  </td>
+                )}
+                <td className="px-4 py-2.5">
+                  {(() => {
+                    const et = getErrorType(row);
+                    if (et === "False Positive") {
+                      return (
+                        <span className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium bg-destructive/15 text-destructive">
+                          {et}
+                        </span>
+                      );
+                    }
+                    if (et === "False Negative") {
+                      return (
+                        <span className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium bg-primary/15 text-primary">
+                          {et}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground">
+                        {et}
+                      </span>
+                    );
+                  })()}
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td
+                  colSpan={hasProb ? 5 : 4}
+                  className="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
+                  No misclassified samples match this filter.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {hasProb && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Sorted by model confidence — high confidence errors indicate systematic failure modes.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function FilterButton({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors border ${
+        active
+          ? "bg-primary text-primary-foreground border-primary"
+          : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
+      }`}
+    >
+      {label}
+      <span
+        className={`inline-flex items-center justify-center rounded-full px-1.5 py-0 text-[10px] font-semibold min-w-[18px] ${
+          active
+            ? "bg-primary-foreground/20 text-primary-foreground"
+            : "bg-muted text-muted-foreground"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
