@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
+import { usePresentationMode, scaleChartHeight } from "@/lib/presentation-mode";
 import type { PredictionRow } from "@/lib/predictions-store";
 import {
   computeConfusionMatrix,
@@ -41,6 +42,7 @@ type ModelEval = {
 const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(3) : "—");
 
 function ComparePage() {
+  const presentation = usePresentationMode();
   const [a, setA] = useState<Loaded | null>(null);
   const [b, setB] = useState<Loaded | null>(null);
 
@@ -158,7 +160,7 @@ function ComparePage() {
                   Model A AUC: {evalA!.roc ? fmt(evalA!.roc.auc) : "—"} · Model B AUC:{" "}
                   {evalB!.roc ? fmt(evalB!.roc.auc) : "—"}
                 </p>
-                <div className="h-[360px] w-full">
+                <div style={{ height: scaleChartHeight(360, presentation) }} className="w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={rocData}

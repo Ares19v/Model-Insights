@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePredictions, type PredictionRow } from "@/lib/predictions-store";
+import { usePresentationMode, scaleChartHeight } from "@/lib/presentation-mode";
 import {
   computeConfusionMatrix,
   computeMetrics,
@@ -50,6 +51,7 @@ const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(3) : "—");
 
 function MetricsPage() {
   const data = usePredictions();
+  const presentation = usePresentationMode();
 
   const cm = useMemo(() => (data ? computeConfusionMatrix(data.rows) : null), [data]);
   const summary = useMemo(() => (cm ? computeMetrics(cm) : null), [cm]);
@@ -143,26 +145,28 @@ function MetricsPage() {
         <header className="space-y-6">
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCopySummary}
-                className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-              >
-                <Clipboard className="h-3.5 w-3.5" />
-                Copy summary
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">
-                  <Download className="h-3.5 w-3.5" />
-                  Export
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleExportCsv}>Export as CSV</DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportJson}>Export as JSON</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {!presentation && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopySummary}
+                  className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                >
+                  <Clipboard className="h-3.5 w-3.5" />
+                  Copy summary
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">
+                    <Download className="h-3.5 w-3.5" />
+                    Export
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCsv}>Export as CSV</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportJson}>Export as JSON</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 border border-border rounded-md overflow-hidden">
             <StatTile label="Accuracy" value={fmt(summary.accuracy)} />
@@ -406,6 +410,7 @@ function MetricsTable({ summary }: { summary: ReturnType<typeof computeMetrics> 
 }
 
 function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetrics> }) {
+  const presentation = usePresentationMode();
   const data = summary.perClass.map((c) => ({
     cls: c.cls,
     precision: Number(c.precision.toFixed(4)),
@@ -432,7 +437,7 @@ function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetr
             </div>
           ))}
         </div>
-        <div className="h-[320px] w-full">
+        <div style={{ height: scaleChartHeight(320, presentation) }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
               <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} vertical={false} />
@@ -472,6 +477,7 @@ function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetr
 
 
 function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) {
+  const presentation = usePresentationMode();
   return (
     <section>
       <div className="flex items-baseline justify-between mb-4">
@@ -484,7 +490,10 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
           <PositiveClassLabel label={String(roc.positiveLabel)} />
         </div>
       </div>
-      <div className="h-[360px] w-full border border-border rounded-md p-4">
+      <div
+        style={{ height: scaleChartHeight(360, presentation) }}
+        className="w-full border border-border rounded-md p-4"
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={roc.points} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
             <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} />
@@ -573,6 +582,7 @@ function ThresholdAnalyzer({
   positiveLabel: string;
   pr: NonNullable<ReturnType<typeof computePrCurve>>;
 }) {
+  const presentation = usePresentationMode();
   const [threshold, setThreshold] = useState(0.5);
   const [optimizeFor, setOptimizeFor] = useState<"f1" | "precision" | "recall">("f1");
   const m = useMemo(
@@ -681,7 +691,7 @@ function ThresholdAnalyzer({
 
         <div>
           <div className="text-xs text-muted-foreground mb-2">Precision–Recall curve</div>
-          <div className="h-[300px] w-full">
+          <div style={{ height: scaleChartHeight(300, presentation) }} className="w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={pr} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
                 <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} />
@@ -785,6 +795,7 @@ function CalibrationCurve({
   rows: PredictionRow[];
   positiveLabel: string;
 }) {
+  const presentation = usePresentationMode();
   const scored = rows.filter((r) => typeof r.y_prob === "number");
   if (scored.length === 0) return null;
 
@@ -822,7 +833,7 @@ function CalibrationCurve({
     <section>
       <h2 className="text-sm font-medium text-foreground mb-4">Calibration curve</h2>
       <div className="border border-border rounded-md p-4">
-        <div className="h-[320px] w-full">
+        <div style={{ height: scaleChartHeight(320, presentation) }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
