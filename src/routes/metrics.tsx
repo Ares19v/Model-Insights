@@ -691,7 +691,7 @@ function ThresholdAnalyzer({
 
         <div>
           <div className="text-xs text-muted-foreground mb-2">Precision–Recall curve</div>
-          <div className="h-[300px] w-full">
+          <div style={{ height: scaleChartHeight(300, presentation) }} className="w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={pr} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
                 <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} />
