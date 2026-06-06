@@ -51,6 +51,7 @@ const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(3) : "—");
 
 function MetricsPage() {
   const data = usePredictions();
+  const presentation = usePresentationMode();
 
   const cm = useMemo(() => (data ? computeConfusionMatrix(data.rows) : null), [data]);
   const summary = useMemo(() => (cm ? computeMetrics(cm) : null), [cm]);
