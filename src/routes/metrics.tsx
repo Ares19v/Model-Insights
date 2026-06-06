@@ -437,7 +437,7 @@ function PerClassBreakdown({ summary }: { summary: ReturnType<typeof computeMetr
             </div>
           ))}
         </div>
-        <div className="h-[320px] w-full">
+        <div style={{ height: scaleChartHeight(320, presentation) }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
               <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} vertical={false} />
