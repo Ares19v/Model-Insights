@@ -490,7 +490,10 @@ function RocChart({ roc }: { roc: NonNullable<ReturnType<typeof computeRoc>> }) 
           <PositiveClassLabel label={String(roc.positiveLabel)} />
         </div>
       </div>
-      <div className="h-[360px] w-full border border-border rounded-md p-4">
+      <div
+        style={{ height: scaleChartHeight(360, presentation) }}
+        className="w-full border border-border rounded-md p-4"
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={roc.points} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
             <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} />
