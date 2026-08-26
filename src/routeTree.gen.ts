@@ -9,19 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as OverviewRouteImport } from './routes/overview'
-import { Route as MetricsRouteImport } from './routes/metrics'
-import { Route as CompareRouteImport } from './routes/compare'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as MetricsRouteImport } from './routes/metrics'
+import { Route as OverviewRouteImport } from './routes/overview'
 
-const OverviewRoute = OverviewRouteImport.update({
-  id: '/overview',
-  path: '/overview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MetricsRoute = MetricsRouteImport.update({
-  id: '/metrics',
-  path: '/metrics',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -29,9 +24,14 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const MetricsRoute = MetricsRouteImport.update({
+  id: '/metrics',
+  path: '/metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OverviewRoute = OverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -71,18 +71,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/overview': {
-      id: '/overview'
-      path: '/overview'
-      fullPath: '/overview'
-      preLoaderRoute: typeof OverviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/metrics': {
-      id: '/metrics'
-      path: '/metrics'
-      fullPath: '/metrics'
-      preLoaderRoute: typeof MetricsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -92,11 +85,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/metrics': {
+      id: '/metrics'
+      path: '/metrics'
+      fullPath: '/metrics'
+      preLoaderRoute: typeof MetricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/overview': {
+      id: '/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof OverviewRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
