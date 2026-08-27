@@ -3,6 +3,9 @@
 # ?? Model Insights
 ### Browser-Based Machine Learning Evaluation & Diagnostics Dashboard
 
+[![CI](https://github.com/Ares19v/Model-Insights/actions/workflows/ci.yml/badge.svg)](https://github.com/Ares19v/Model-Insights/actions/workflows/ci.yml)
+
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TanStack Router](https://img.shields.io/badge/TanStack_Router-v1-FF4154?style=for-the-badge&logo=react-query)](https://tanstack.com/)
