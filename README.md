@@ -78,4 +78,4 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-© 2025 Devansh Tyagi (Ares19v). All Rights Reserved.
+© 2026 Devansh Tyagi (Ares19v). All Rights Reserved.
