@@ -1,120 +1,80 @@
-# Model Insights
+<div align="center">
 
-A browser-based machine learning evaluation dashboard. Upload a predictions CSV and get an instant visual breakdown of your model's performance — confusion matrix, ROC curve, precision-recall analysis, and per-class metrics. No backend, no data leaves your machine.
+# ?? Model Insights
+### Browser-Based Machine Learning Evaluation & Diagnostics Dashboard
 
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white)
-![Cloudflare](https://img.shields.io/badge/Deployed_on-Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TanStack Router](https://img.shields.io/badge/TanStack_Router-v1-FF4154?style=for-the-badge&logo=react-query)](https://tanstack.com/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
----
+<p align="center">
+  <b>Instant, client-side ML model evaluation. Upload your raw predictions CSV and generate interactive confusion matrices, ROC/PR curves, per-class metrics, and error analysis without your sensitive data ever leaving your machine.</b>
+</p>
 
-## What It Does
-
-Most model evaluation happens inside notebooks — scattered, hard to share, and tedious to reproduce. Model Insights turns your raw prediction output into a structured, interactive report in seconds.
-
-Drop in a CSV, and the dashboard computes and renders:
-
-- **Confusion Matrix** — cell-intensity heatmap with raw counts
-- **ROC Curve** — with AUC score annotated on the chart
-- **Precision-Recall Curve** — with live threshold adjustment via slider
-- **Per-class Metrics Table** — Accuracy, Precision, Recall, F1, Support, and weighted averages
-- **Class Distribution** — bar chart of label frequencies in your dataset
-- **Data Preview** — first 10 rows of your uploaded file
-
-All computation runs entirely in the browser using PapaParse for CSV parsing and Recharts for visualization. Nothing is sent to a server.
+</div>
 
 ---
 
-## CSV Format
+## ?? Overview
 
-Your file must contain at minimum:
-
-| Column | Required | Description |
-|---|---|---|
-| `y_true` | Yes | Ground truth labels |
-| `y_pred` | Yes | Model predicted labels |
-| `y_prob` | No | Predicted probability (binary classification only) |
-
-If `y_prob` is present, the ROC curve, Precision-Recall curve, and threshold slider are enabled automatically.
+**Model Insights** is a zero-backend, client-side diagnostics workbench for data scientists and ML engineers. Instead of writing repetitive matplotlib or scikit-learn boilerplate to inspect classification runs, drag and drop any predictions CSV file to immediately explore interactive performance charts, threshold sliders, and misclassification deep-dives.
 
 ---
 
-## Tech Stack
+## ? Key Features
 
-| Category | Technology |
-|---|---|
-| Framework | React 19 + TypeScript 5 |
-| Build Tool | Vite 7 |
-| Routing | TanStack Router |
-| Data Fetching | TanStack Query v5 |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui (Radix UI primitives) |
-| Charts | Recharts |
-| CSV Parsing | PapaParse |
-| Forms | React Hook Form + Zod |
-| Deployment | Cloudflare (via `@cloudflare/vite-plugin`) |
-| Package Manager | Bun |
+- **?? 100% Privacy & Security**: All CSV parsing and statistical calculations occur inside your browser using PapaParse and Web Workers. No model outputs or proprietary data are ever sent over the network.
+- **?? Interactive Confusion Matrix**: Dynamic normalization (raw count, true-class recall, predicted precision) with clickable cells to inspect specific false positive / false negative prediction sets.
+- **?? ROC & Precision-Recall Curves**: Interactive threshold sliders allowing you to calibrate decision boundaries and observe real-time trade-offs between precision and recall.
+- **?? Multi-Class & Binary Metrics**: Automatic computation of Macro/Micro F1-Score, Accuracy, Log-Loss, MCC (Matthews Correlation Coefficient), and Balanced Accuracy.
+- **?? Slice-Based Error Analysis**: Filter model performance across custom dataset attributes to uncover hidden edge cases and subpopulation bias.
+- **?? Blazing Fast & Lightweight**: Powered by React 19, Vite, TanStack Router, and Web Worker multithreading capable of parsing hundred-thousand row prediction sets smoothly.
 
 ---
 
-## Getting Started
+## ??? Tech Stack & Architecture
+
+```
+Model-Insights/
+??? src/
+?   ??? components/         # Metric cards, threshold sliders, UploadZone
+?   ??? components/charts/  # ROC, PR curve, Confusion Matrix & Bar charts
+?   ??? components/ui/      # Radix UI primitives & Tailwind components
+?   ??? routes/             # TanStack Router file-based route tree
+?   ??? utils/              # Client-side statistics, metrics calculation & CSV parsers
+?   ??? styles.css          # Tailwind CSS styles
+??? EVAL.md                 # Evaluation report & benchmark metrics
+??? vite.config.ts          # Vite build pipeline
+??? package.json            # Dependencies and scripts
+```
+
+---
+
+## ?? Quick Start
 
 ### Prerequisites
+- Node.js 18+ (or Bun)
 
-- [Node.js](https://nodejs.org/) v18+ or [Bun](https://bun.sh/)
-
-### Install & Run
+### Installation & Run
 
 ```bash
+# Clone the repository
 git clone https://github.com/Ares19v/Model-Insights.git
 cd Model-Insights
 
-bun install       # or: npm install
-bun run dev       # or: npm run dev
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-App runs at `http://localhost:5173`
-
-### Other Commands
-
-```bash
-bun run build     # Production build
-bun run preview   # Preview production build locally
-bun run lint      # Lint the codebase
-bun run format    # Format with Prettier
-```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## Project Structure
+## ?? License
 
-```
-src/
-├── components/       # Reusable UI components
-│   ├── charts/       # Confusion matrix, ROC, PR curve
-│   └── ui/           # shadcn/ui primitives
-├── routes/           # TanStack Router file-based routes
-├── lib/
-│   ├── metrics.ts    # Core metric computation (F1, AUC, etc.)
-│   └── utils.ts      # Helpers
-└── main.tsx          # App entry point
-```
-
----
-
-## Motivation
-
-Built as a practical companion to my [PCB defect detection project](https://github.com/Ares19v/Inspection-Engine), where evaluating model outputs beyond accuracy — particularly per-class recall on imbalanced defect categories — was critical. Wanted a clean, shareable way to do that without opening a notebook.
-
----
-
-## Built By
-
-[Ares19v](https://github.com/Ares19v)
-
----
-<p align="center">
-  Made by Devansh Tyagi @ 2026
-</p>
+Distributed under the MIT License. See `LICENSE` for details.

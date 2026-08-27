@@ -85,5 +85,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1"
-  }
+  },
+  "description": "Client-side ML model evaluation dashboard generating instant confusion matrices, ROC/PR curves, and per-class metrics."
 }
