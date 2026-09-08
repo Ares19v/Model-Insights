@@ -1,6 +1,6 @@
 <div align="center">
 
-# ?? Model Insights
+# 📊 Model Insights
 ### Browser-Based Machine Learning Evaluation & Diagnostics Dashboard
 
 [![CI](https://github.com/Ares19v/Model-Insights/actions/workflows/ci.yml/badge.svg)](https://github.com/Ares19v/Model-Insights/actions/workflows/ci.yml)
@@ -20,42 +20,70 @@
 
 ---
 
-## ?? Overview
+## 🌐 Overview
 
 **Model Insights** is a zero-backend, client-side diagnostics workbench for data scientists and ML engineers. Instead of writing repetitive matplotlib or scikit-learn boilerplate to inspect classification runs, drag and drop any predictions CSV file to immediately explore interactive performance charts, threshold sliders, and misclassification deep-dives.
 
 ---
 
-## ? Key Features
+## 🖥️ Diagnostics & Workbench Showcase
 
-- **?? 100% Privacy & Security**: All CSV parsing and statistical calculations occur inside your browser using PapaParse and Web Workers. No model outputs or proprietary data are ever sent over the network.
-- **?? Interactive Confusion Matrix**: Dynamic normalization (raw count, true-class recall, predicted precision) with clickable cells to inspect specific false positive / false negative prediction sets.
-- **?? ROC & Precision-Recall Curves**: Interactive threshold sliders allowing you to calibrate decision boundaries and observe real-time trade-offs between precision and recall.
-- **?? Multi-Class & Binary Metrics**: Automatic computation of Macro/Micro F1-Score, Accuracy, Log-Loss, MCC (Matthews Correlation Coefficient), and Balanced Accuracy.
-- **?? Slice-Based Error Analysis**: Filter model performance across custom dataset attributes to uncover hidden edge cases and subpopulation bias.
-- **?? Blazing Fast & Lightweight**: Powered by React 19, Vite, TanStack Router, and Web Worker multithreading capable of parsing hundred-thousand row prediction sets smoothly.
+<p align="center">
+  <img src="assets/Model-Insights_1.png" alt="Model Insights Metrics Summary & Confusion Matrix" width="100%" style="border-radius: 8px; border: 1px solid #30363d;" />
+  <br>
+  <em>Metrics Summary & Confusion Matrix: Accuracy, weighted F1 scoring, sample counts, and interactive true/false positive matrix.</em>
+</p>
+
+<p align="center">
+  <img src="assets/Model-Insights_2.png" alt="Model Insights Per-Class Breakdown" width="100%" style="border-radius: 8px; border: 1px solid #30363d;" />
+  <br>
+  <em>Per-Class Evaluation Breakdown: Detailed precision, recall, F1, and support distribution across classification targets.</em>
+</p>
+
+<p align="center">
+  <img src="assets/Model-Insights_3.png" alt="Model Insights Decision Boundary Threshold Analyzer" width="100%" style="border-radius: 8px; border: 1px solid #30363d;" />
+  <br>
+  <em>Interactive Decision Boundary Threshold Analyzer: Dynamic slider calibration optimizing for F1, Precision, or Recall alongside the ROC curve.</em>
+</p>
+
+<p align="center">
+  <img src="assets/Model-Insights_4.png" alt="Model Insights Probability Calibration & Misclassified Samples" width="100%" style="border-radius: 8px; border: 1px solid #30363d;" />
+  <br>
+  <em>Probability Calibration & Error Deep-Dive: Reliability calibration curve with Brier score and confidence-ranked misclassification table.</em>
+</p>
 
 ---
 
-## ??? Tech Stack & Architecture
+## ✨ Key Features
+
+- **🔒 100% Privacy & Security**: All CSV parsing and statistical calculations occur inside your browser using PapaParse and Web Workers. No model outputs or proprietary data are ever sent over the network.
+- **🎯 Interactive Confusion Matrix**: Dynamic normalization (raw count, true-class recall, predicted precision) with clickable cells to inspect specific false positive / false negative prediction sets.
+- **📈 ROC & Precision-Recall Curves**: Interactive threshold sliders allowing you to calibrate decision boundaries and observe real-time trade-offs between precision and recall.
+- **⚖️ Multi-Class & Binary Metrics**: Automatic computation of Macro/Micro F1-Score, Accuracy, Log-Loss, MCC (Matthews Correlation Coefficient), and Balanced Accuracy.
+- **🔬 Slice-Based Error Analysis**: Filter model performance across custom dataset attributes to uncover hidden edge cases and subpopulation bias.
+- **⚡ Blazing Fast & Lightweight**: Powered by React 19, Vite, TanStack Router, and Web Worker multithreading capable of parsing hundred-thousand row prediction sets smoothly.
+
+---
+
+## 🏗️ Tech Stack & Architecture
 
 ```
 Model-Insights/
-??? src/
-?   ??? components/         # Metric cards, threshold sliders, UploadZone
-?   ??? components/charts/  # ROC, PR curve, Confusion Matrix & Bar charts
-?   ??? components/ui/      # Radix UI primitives & Tailwind components
-?   ??? routes/             # TanStack Router file-based route tree
-?   ??? utils/              # Client-side statistics, metrics calculation & CSV parsers
-?   ??? styles.css          # Tailwind CSS styles
-??? EVAL.md                 # Evaluation report & benchmark metrics
-??? vite.config.ts          # Vite build pipeline
-??? package.json            # Dependencies and scripts
+├── src/
+│   ├── components/         # Metric cards, threshold sliders, UploadZone
+│   ├── components/charts/  # ROC, PR curve, Confusion Matrix & Bar charts
+│   ├── components/ui/      # Radix UI primitives & Tailwind components
+│   ├── routes/             # TanStack Router file-based route tree
+│   ├── utils/              # Client-side statistics, metrics calculation & CSV parsers
+│   └── styles.css          # Tailwind CSS styles
+├── EVAL.md                 # Evaluation report & benchmark metrics
+├── vite.config.ts          # Vite build pipeline
+└── package.json            # Dependencies and scripts
 ```
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ (or Bun)
@@ -78,4 +106,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-© 2026 Devansh Tyagi (Ares19v). All Rights Reserved.
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
